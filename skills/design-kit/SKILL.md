@@ -38,6 +38,8 @@ description: 웹페이지·HTML·대시보드·관리 도구 UI·앱 화면·랜
 
 파일은 스킬에 들어 있지 않고 쓸 때 받아 온다 (파일당 25~35KB).
 
+명령은 맥 터미널과 윈도우 Git Bash(Claude Code 기본 셸) 모두에서 그대로 동작한다. 윈도우 PowerShell에서 직접 돌릴 때만 `/tmp/design-refs` 를 `$env:TEMP\design-refs` 로, `curl` 을 `curl.exe` 로 바꾼다.
+
 아래 순서대로 시도하고, 앞 단계가 성공하면 멈춘다. 받은 파일이 비어 있거나 DESIGN.md 내용이 아니면(HTML 오류 페이지 등) 실패로 보고 다음 단계로 넘어간다.
 
 ```bash
@@ -65,15 +67,9 @@ curl -fsSL https://raw.githubusercontent.com/deserite/awesome-design-md/main/des
 - 토큰을 `:root` CSS 변수로 먼저 선언하고, 컴포넌트는 변수만 참조한다. 임의의 새 색을 만들지 않는다.
 - 포인트 색은 파일이 허용한 자리(주요 CTA, 포커스, 링크 등)에만 쓴다. 장식용으로 퍼뜨리지 않는다.
 - 다크/라이트가 둘 다 정의된 레퍼런스는 사용자가 정하지 않으면 파일의 기본 캔버스를 따른다.
-- **폰트 대체** — 레퍼런스 폰트는 대부분 상용 전용 폰트라 그대로 못 쓴다.
-  - 산세리프 계열 → `Inter` 또는 `Geist`
-  - 세리프 디스플레이 → `Noto Serif KR` (영문은 `Source Serif 4`)
-  - 모노 → `JetBrains Mono` 또는 `IBM Plex Mono`
-  - IBM 레퍼런스 → `IBM Plex Sans KR` (원본 패밀리의 한글판)
-  - **한글은 항상 폴백을 넣는다.** 웹 아티팩트(외부 호스트 차단, Google Fonts만 허용)에서는 `Noto Sans KR`, 로컬 앱에서는 `Pretendard`를 우선한다.
-  - 원본의 웨이트, 자간(letter-spacing), 줄간격 값은 대체 폰트에도 그대로 옮긴다. 단 한글 본문에 큰 음수 자간은 피한다 (−0.01em 정도까지만).
+- **폰트** — 아래 「폰트 가져오기」 섹션대로 레퍼런스 폰트를 찾아 실제로 불러온다. 이름만 적고 불러오지 않으면 기본 폰트로 떨어진다.
 - 간격·모서리·그림자 값은 파일 수치를 그대로 쓴다.
-- 결과물 끝에 사용한 레퍼런스를 한 줄로 밝힌다. 예: "디자인 레퍼런스: linear.app (다크)".
+- 결과물 끝에 사용한 레퍼런스와 폰트를 한 줄로 밝힌다. 예: "디자인 레퍼런스: linear.app (다크) · 폰트 Linear Display → Inter".
 
 ### 5. 지켜야 할 선 (중요)
 
@@ -81,6 +77,140 @@ curl -fsSL https://raw.githubusercontent.com/deserite/awesome-design-md/main/des
 - 해당 브랜드의 이름, 로고, 워드마크, 마스코트, 제품 사진, 고유 카피를 넣지 않는다.
 - 그 회사의 실제 사이트·로그인·결제 화면처럼 보이게 만들지 않는다. 사용자가 요청해도 마찬가지다.
 - 결과물은 사용자의 콘텐츠와 이름으로 채운다.
+
+## 폰트 가져오기
+
+목표는 레퍼런스의 글꼴 느낌을 실제 화면에 살리는 것이다. 폰트 이름을 CSS에 적는 것만으로는 안 되고, 반드시 **불러오는 코드**까지 넣는다.
+
+### 원칙 (라이선스)
+
+- 상용 폰트 파일(브랜드 사이트의 woff 등)을 내려받거나 링크하지 않는다. 라이선스 위반이다.
+- 원본이 무료 오픈 라이선스 폰트면 **그 폰트를 그대로** 쓴다(Geist, Inter, IBM Plex, Roboto 등).
+- 원본이 상용 폰트면 아래 표의 **비슷한 무료 폰트**(Google Fonts · 대부분 SIL OFL — 상업 사용·웹 임베드 가능)로 바꾼다.
+- 사용자가 원본 폰트의 라이선스를 갖고 설치해 두었다고 하면, `local("원본 이름")` 을 맨 앞에 두고 무료 폰트를 뒤에 둔다. 파일을 복사하거나 웹에 올리지는 않는다.
+- 결과물 끝 레퍼런스 표기에 폰트도 적는다. 예: "디자인 레퍼런스: stripe · 폰트 Söhne → Inter Tight(비슷한 무료 폰트)".
+
+### 순서
+
+1. 받은 DESIGN.md frontmatter `typography` 의 `fontFamily` 값에서 **역할별(디스플레이 · 본문 · 모노) 첫 번째 폰트 이름**을 뽑는다. frontmatter가 없으면 본문의 Typography 섹션에서 찾는다.
+2. 아래 「폰트 매핑표」에서 찾는다. 대소문자, 공백·하이픈, `VF`·`Variable`·`Display`·`Text`·`Pro` 같은 꼬리는 무시하고 맞춘다.
+3. 표에 없으면 DESIGN.md의 폰트 설명(geometric · grotesk · humanist · serif · mono · condensed · rounded)을 보고 「표에 없을 때」에서 고른다.
+4. 쓸 폰트를 불러오는 코드를 `<head>` 에 넣는다(아래 「불러오기」).
+5. `font-family` 는 **영문 폰트 → 한글 폰트 → 일반 계열** 순서로 쓴다. 영문 글자는 레퍼런스 느낌으로, 한글은 한글 폰트로 그려진다.
+   ```css
+   --font-display: "Inter Tight", "Pretendard Variable", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+   --font-body:    "Inter", "Pretendard Variable", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+   --font-mono:    "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+   ```
+6. 원본의 웨이트 · 자간 · 줄간격 값은 바꾼 폰트에도 그대로 옮긴다. 단 한글 본문에 큰 음수 자간은 피한다(−0.01em까지).
+7. 확인: 브라우저로 열 수 있으면 `await document.fonts.ready` 뒤 `document.fonts.check('16px "Inter Tight"')` 가 `true` 인지 본다. 못 열면 최소한 `<link>` 주소의 폰트 이름 철자와 웨이트가 표와 맞는지 다시 확인한다.
+
+### 불러오기
+
+**Google Fonts** — 아티팩트(외부 호스트는 Google Fonts만 허용)와 로컬 모두 쓸 수 있다.
+
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+```
+
+- 폰트 이름의 공백은 `+` 로, 필요한 웨이트만 `:wght@400;600;700` 처럼 나열한다.
+- 표에서 **단일 웨이트**로 표시된 폰트는 `:wght@…` 를 붙이지 않는다(붙이면 그 줄 전체가 400 오류로 안 불러와진다).
+- 폰트에 없는 웨이트를 넣어도 같은 오류가 난다. 범위가 좁은 폰트는 가장 가까운 웨이트로 바꿔 넣는다: Lato(100·300·400·700·900) · Titillium Web(200·300·400·600·700·900) · DM Mono(300·400·500) · Playfair Display(400~900) · Chakra Petch · Space Grotesk(300~700) · IBM Plex Sans KR(100~700) · Manrope · Plus Jakarta Sans(200~800) · JetBrains Mono(100~800) · Open Sans(300~800).
+
+**Pretendard** — 로컬 HTML · 사내 앱에서 한글 기본. 아티팩트에서는 막히므로 `Noto Sans KR` 만 쓴다.
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+```
+(폰트 이름: `"Pretendard Variable"`)
+
+**한글 짝**: 산세리프 → `Pretendard Variable`(로컬) / `Noto Sans KR`(아티팩트) · 세리프 → `Noto Serif KR` · IBM Plex 계열 → `IBM Plex Sans KR` · 모노 → 한글이 거의 없으므로 산세리프 한글 짝을 뒤에 둔다.
+
+### 맥 · 윈도우 모두에서 같게 보이게
+
+결과물은 맥과 윈도우에서 모두 열린다고 가정한다.
+- **웹폰트를 항상 불러온다.** 시스템 폰트에 기대지 않는다. `-apple-system`·SF Pro·Helvetica Neue·`ui-rounded` 는 맥에만 있으므로, 쓰더라도 바로 뒤에 불러온 무료 폰트를 둔다(윈도우는 그 폰트로 그려진다).
+- 한글도 웹폰트(Pretendard 또는 Noto Sans KR)를 불러온다. 맥은 Apple SD Gothic Neo, 윈도우는 맑은 고딕으로 떨어지면 모양이 크게 달라진다. 두 OS 기본 한글 폰트는 스택 맨 끝 대비용으로만 둔다.
+- 모노 스택은 `"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace` — Menlo는 맥, Consolas는 윈도우 대비.
+- 윈도우는 아주 가는 글씨가 흐리게 보인다. 레퍼런스가 200~300 웨이트를 써도 **본문은 400 이상**, 큰 제목만 300까지.
+- `-webkit-font-smoothing: antialiased` 는 맥에만 먹는다. 넣어도 되지만 윈도우에서 같은 두께를 기대하지 않는다.
+
+### 폰트 매핑표
+
+관계: **같음** = 원본이 무료라 그대로 · **비슷** = 상용 원본 대신 비슷한 무료 폰트 · **시스템** = OS 기본 폰트(파일을 넣지 않음, 웹에서는 괄호 안 무료 폰트를 뒤에).
+
+| 원본 폰트 (DESIGN.md 표기) | 쓰는 레퍼런스 | 쓸 폰트 | 관계 |
+|---|---|---|---|
+| Inter · Inter Display · Inter Variable | 1win, airtable, cal, clay, clickhouse, expo, framer, jobright, mintlify, mistral.ai, raycast, resend, revolut, voltagent, warp, wise, zapier | Inter | 같음 |
+| Geist | vercel | Geist | 같음 |
+| Geist Mono · GeistMono | vercel, mintlify, resend, x.ai | Geist Mono | 같음 |
+| JetBrains Mono | cal, claude, clickhouse, mistral.ai, replicate | JetBrains Mono | 같음 |
+| IBM Plex Sans (Variable) | ibm, posthog | IBM Plex Sans (+ IBM Plex Sans KR) | 같음 |
+| Roboto | aljazeera | Roboto | 같음 |
+| Open Sans | dji | Open Sans | 같음 |
+| Titillium Web | jobright | Titillium Web | 같음 |
+| DM Sans | minimax | DM Sans | 같음 |
+| DM Mono | warp | DM Mono | 같음 |
+| Source Code Pro | mongodb, posthog | Source Code Pro | 같음 |
+| Rubik | sentry | Rubik | 같음 |
+| Instrument Serif | warp | Instrument Serif · 단일 웨이트 | 같음 |
+| Cal Sans | cal | Cal Sans · 단일 웨이트 | 같음 |
+| sohne-var (Söhne) | stripe | Inter Tight | 비슷 |
+| Linear Display · Linear Text | linear.app | Inter | 비슷 |
+| Linear Mono · Berkeley Mono · SFMono · Monaco · ui-monospace | linear.app, opencode.ai, voltagent, sentry, ollama, posthog, shopify, supabase | JetBrains Mono | 비슷 |
+| SF Pro Display · SF Pro Text | apple | Inter (맥에서는 앞에 `-apple-system`) | 시스템 |
+| SF Pro Rounded | ollama | Nunito (맥에서는 앞에 `ui-rounded`) | 시스템 |
+| Helvetica · Helvetica Neue | nike, resend, dell-1996 | Inter Tight (맥에서는 앞에 Helvetica Neue) | 시스템 |
+| Arial · Arial Black · Georgia · Times New Roman | dell-1996, nintendo-2001, oracle | 그대로 (맥·윈도우 모두 기본 설치) | 시스템 |
+| Haas Groot Disp · Haas · NeueHaasGrotesk · Helvetica Now | airtable, shopify, nike | Inter Tight | 비슷 |
+| Unica77 · CohereText · Forma DJR · arcadia · rb-freigeist-neue · UberMove · CursorGothic · Waldenburg | cohere, hp, mercury, replicate, uber, cursor, elevenlabs, sanity | Inter Tight | 비슷 |
+| figmaSans · hashicorpSans · Notion Sans · Pin Sans · Saans · AkkuratLL · basier-square · WF Visual Sans · universalSans · Universal Sans · abcDiatype · abcNormal · Coinbase Display · Super Sans · Kraken · Plain · Camera Plain | figma, hashicorp, notion, pinterest, intercom, mobbin, oura, replicate, webflow, x.ai, tesla, composio, runwayml, coinbase, superhuman, kraken, clay, lovable | Inter | 비슷 |
+| figmaMono · SaansMono · CohereMono · WFVisualSans-Mono · Bugatti Monospace · PP Neue Montreal Mono | figma, intercom, cohere, webflow, bugatti, together.ai | DM Mono | 비슷 |
+| Circular · Airbnb Cereal · SpotifyMixUI · SoDoSans · Optimistic VF · Averta | supabase, airbnb, spotify, starbucks, meta, mydealz | Figtree | 비슷 |
+| GT Walsheim · The Future · NouvelR | framer, together.ai, renault | Outfit | 비슷 |
+| Euclid Circular A | mongodb | Plus Jakarta Sans | 비슷 |
+| Roobert · Aeonik · Degular · BinanceNova | miro, revolut, zapier, binance | Manrope | 비슷 |
+| BinancePlex | binance | IBM Plex Sans | 비슷 (원본이 Plex 기반) |
+| StyreneB | claude | DM Sans | 비슷 |
+| Gotham | nerdwallet | Montserrat | 비슷 |
+| MarkForMC | mastercard | Poppins | 비슷 |
+| Apercu | wired | Work Sans | 비슷 |
+| ABC Favorit | resend | Space Grotesk | 비슷 |
+| Salesforce-Avant-Garde | slack | Questrial · 단일 웨이트 | 비슷 |
+| Salesforce-Sans | slack | Lato | 비슷 |
+| PlayStation SST · Oracle Sans | playstation, oracle | Source Sans 3 | 비슷 |
+| 72 Brand | sap | Noto Sans | 비슷 |
+| D-DIN · NVIDIA-EMEA · BMW Type Next · FerrariSans | spacex, nvidia, bmw, bmw-m, ferrari | Barlow | 비슷 |
+| LamboType | lamborghini | Chakra Petch | 비슷 |
+| Bugatti Display | bugatti | Michroma · 단일 웨이트 | 비슷 |
+| Bugatti Text | bugatti | Montserrat | 비슷 |
+| Sentri Display | sentry | Rubik | 비슷 |
+| Vodafone | vodafone | Rubik | 비슷 |
+| Nike Futura ND · Manuka | nike, theverge | Anton · 단일 웨이트 | 비슷 |
+| Wise Sans | wise | Archivo Black · 단일 웨이트 | 비슷 |
+| ABC Ginto Nord | discord | Unbounded | 비슷 |
+| Copernicus · Tiempos | claude | Source Serif 4 | 비슷 |
+| BreveText | wired | Source Serif 4 | 비슷 |
+| PP Editorial Old · Editorial New | mistral.ai, oura | Instrument Serif · 단일 웨이트 | 비슷 |
+| Domaine Display · WiredDisplay | resend, wired | Playfair Display | 비슷 |
+
+### 표에 없을 때
+
+| 원본 설명 | 쓸 폰트 |
+|---|---|
+| 중립 그로테스크 · 네오 그로테스크 (Helvetica 계열) | Inter Tight |
+| 일반 UI 산세리프 | Inter |
+| 기하학적 (Futura · Circular 계열) | Figtree · 더 둥글면 Outfit |
+| 휴머니스트 | Source Sans 3 |
+| 각지고 기술적 (DIN 계열) | Barlow |
+| 넓은 디스플레이 | Unbounded · 아주 넓으면 Michroma |
+| 좁고 굵은 디스플레이 | Anton |
+| 둥근 | Nunito |
+| 본문 세리프 | Source Serif 4 |
+| 디스플레이 세리프 | Playfair Display · 가늘고 우아하면 Instrument Serif |
+| 모노 | JetBrains Mono · 부드러우면 DM Mono |
 
 ## 용도별 추천 (참고용 출발점)
 
