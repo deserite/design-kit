@@ -1,0 +1,11 @@
+{
+  "name": "design-kit",
+  "version": "1.0.0",
+  "description": "실제 사이트 86곳의 DESIGN.md 레퍼런스 중 요청에 맞는 것을 추천하고, 그 색·타이포·컴포넌트 규칙대로 UI를 만드는 스킬",
+  "author": {
+    "name": "deserite"
+  },
+  "repository": "https://github.com/deserite/design-kit",
+  "license": "MIT",
+  "keywords": ["design", "design-md", "ui", "design-system"]
+}
