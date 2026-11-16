@@ -1,6 +1,6 @@
 ---
 name: design-kit
-description: 웹페이지·HTML·대시보드·관리 도구 UI·앱 화면·랜딩을 만들 때 실제 사이트 86곳의 DESIGN.md 레퍼런스 중 요청에 맞는 후보를 추천하고, 고른 것의 색·타이포·간격·컴포넌트 규칙대로 만든다. "Linear 느낌으로", "Stripe 스타일", "디자인 레퍼런스 골라줘"나 UI 제작 요청 시 사용.
+description: 웹페이지·HTML·대시보드·PPT·문서·앱 화면을 만들 때 실제 사이트 86곳의 DESIGN.md 레퍼런스 중 요청에 맞는 후보를 추천하고, 고른 것의 색·타이포·간격·컴포넌트 규칙대로 만든다. 폰트는 비슷한 무료 폰트로 불러오거나 설치까지 한다. "Linear 느낌으로", "Stripe 스타일", 디자인 레퍼런스 요청 시 사용.
 ---
 
 # design-kit — 골라 쓰는 디자인 레퍼런스
@@ -11,6 +11,7 @@ description: 웹페이지·HTML·대시보드·관리 도구 UI·앱 화면·랜
 ## 언제 쓰나
 
 - HTML 페이지, 아티팩트, 대시보드, 어드민·관리 도구, 랜딩, 앱 화면, 보고서형 웹페이지를 만들 때
+- PPT · Word 같은 문서를 레퍼런스 스타일로 바꿀 때 (폰트 설치는 「폰트 설치」 섹션)
 - 사용자가 특정 서비스 느낌을 말할 때 ("Vercel처럼 깔끔하게", "노션 느낌")
 - 기존 화면을 다른 톤으로 리스타일할 때
 
@@ -127,6 +128,37 @@ curl -fsSL https://raw.githubusercontent.com/deserite/awesome-design-md/main/des
 (폰트 이름: `"Pretendard Variable"`)
 
 **한글 짝**: 산세리프 → `Pretendard Variable`(로컬) / `Noto Sans KR`(아티팩트) · 세리프 → `Noto Serif KR` · IBM Plex 계열 → `IBM Plex Sans KR` · 모노 → 한글이 거의 없으므로 산세리프 한글 짝을 뒤에 둔다.
+
+### 폰트 설치 (내 PC · PPT · Word)
+
+웹페이지는 위 「불러오기」로 충분하지만, **PPT · Word · 이미지 · PDF 처럼 PC에 설치된 폰트로 그리는 결과물은 폰트가 설치돼 있어야** 한다. 이 스킬의 `scripts/install_fonts.py` 가 무료 폰트를 받아 설치한다(Google Fonts 공식 저장소 · Pretendard 공식 배포본 · 관리자 권한 필요 없음 · 맥 `~/Library/Fonts` · 윈도우 사용자 폰트 폴더 + 사용자 레지스트리 · 이미 있으면 건너뜀).
+
+1. 결과물에 쓸 폰트를 정하면 먼저 확인한다(`<스킬>` = 이 SKILL.md 가 있는 폴더 · 윈도우는 `python3` 대신 `py -3` 또는 `python`):
+   ```bash
+   python3 "<스킬>/scripts/install_fonts.py" --check "Inter Tight" Pretendard
+   ```
+2. 없는 폰트가 있으면 **AskUserQuestion 으로 설치할지 묻는다.** 선택지에 폰트 이름 · 굵기 · 설치 위치를 적는다. 거절하면 설치하지 않고, 결과물이 다른 폰트로 보일 수 있다고 한 줄 알린다.
+3. 허락하면 결과물에 쓰는 **모든 굵기**를 넣어 설치한다:
+   ```bash
+   python3 "<스킬>/scripts/install_fonts.py" "Inter Tight" Pretendard --weights 300,400,600,700
+   ```
+   - 가변 폰트에서 굵기별 고정 파일을 만들려면 fontTools 가 필요하다. 없다는 메시지가 나오면 같은 허락 안에서 `python3 -m pip install --user fonttools` 로 설치하고 다시 실행한다(그래도 안 되면 `--break-system-packages`).
+   - 설치 뒤 「PowerPoint · Word · 브라우저를 다시 시작해야 새 폰트가 보입니다」를 꼭 알린다.
+4. **Claude 가 사용자 PC 밖(클라우드)에서 돌고 있을 때**(Cowork · claude.ai): 사용자 PC에 직접 설치할 수 없다. `--out <폴더>` 로 폰트 파일만 만들어 전달한다.
+   - 맥: 사용자가 `~/Library/Fonts` 폴더를 연결해 두었으면 그 폴더에 파일을 넣는다. 아니면 파일을 보내고 「더블클릭 → 설치」를 안내한다.
+   - 윈도우: 파일을 보내고 「파일 우클릭 → 설치」를 안내한다(폴더에 복사만 해서는 등록되지 않는다).
+
+### PPT · Word 결과물 규칙
+
+- 폰트 이름은 설치 스크립트가 만드는 이름과 **글자 하나까지** 맞춘다. 맥 · 윈도우 모두 이 이름으로 잡힌다.
+  - 400 → `"Inter Tight"` · 700 → `"Inter Tight"` + 굵게(`b="1"`)
+  - 그 밖 → `"Inter Tight Light"` · `"Inter Tight Medium"` · `"Inter Tight SemiBold"` · `"Inter Tight ExtraBold"` 처럼 `폰트 이름 + 공백 + 굵기 이름`(Thin · ExtraLight · Light · Medium · SemiBold · ExtraBold · Black)
+  - `SmBld` · `Semibold` · `Demi` 같은 줄임 · 변형 이름은 쓰지 않는다(이름이 안 맞으면 기본 폰트로 바뀐다).
+- 글자마다 영문(`a:latin`)과 한글(`a:ea`) 폰트를 둘 다 지정한다. 예: latin `Inter Tight SemiBold` + ea `Pretendard SemiBold`.
+- 테마 폰트(제목 · 본문)도 영문 · 한글 모두 바꿔 둔다. 안 그러면 나중에 새로 입력하는 글자가 Calibri · 맑은 고딕으로 들어간다.
+- **받는 사람 PC에는 폰트가 없다.** 결과를 넘길 때 배포 방법을 함께 안내한다:
+  - 공지 · 안내물처럼 고칠 일이 없으면 **PDF 나 이미지로 내보내 배포**(폰트가 설치된 PC에서 내보낸다).
+  - PPTX 그대로 보내야 하면 **글꼴 포함 저장**: 윈도우 PowerPoint `파일 > 옵션 > 저장 > 파일의 글꼴 포함` · 맥 PowerPoint `PowerPoint > 환경설정 > 저장 > 파일에 글꼴 포함`. 무료(OFL) 폰트라 포함해도 된다.
 
 ### 맥 · 윈도우 모두에서 같게 보이게
 
